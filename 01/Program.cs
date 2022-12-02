@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿
 
 // Helper functions
 async Task<string> DownloadFileFromTheInternetAsync(string uri)
@@ -11,37 +11,30 @@ async Task<string> DownloadFileFromTheInternetAsync(string uri)
 }
 
 
-
-string Decode(string message, System.Collections.Generic.Dictionary<string, string> dic)
+string? Decode(string message, Dictionary<string, string?> dic)
 {
+    foreach (var key in dic)
+        if (message.StartsWith(key.Key))
+        {
+            if (message.Length == key.Key.Length) return key.Value;
 
-    foreach(var key in dic) {
-        if(message.StartsWith(key.Key)) {
-            if(message.Length == key.Key.Length) {
-                return key.Value;
-            }
-
-            var z = Decode(message.Substring(key.Key.Length), dic);
-            if(z != null) {
-                return key.Value + " " + z;
-            }
+            var z = Decode(message[key.Key.Length..], dic);
+            if (z != null) return key.Value + " " + z;
         }
-    }
+
     return null;
 }
 
 
-
-
-
 // Read the dictionary into a Dictionary
-const string dictionaryUrl = "https://julekalender-backend.knowit.no/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBb1VEIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2f6bcd547b6ffe889579dd8a1af8249693a333d7/dictionary.txt?disposition=inline";
-string body = await DownloadFileFromTheInternetAsync(dictionaryUrl);
-var z = body
+const string dictionaryUrl =
+    "https://julekalender-backend.knowit.no/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBb1VEIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2f6bcd547b6ffe889579dd8a1af8249693a333d7/dictionary.txt?disposition=inline";
+var body = await DownloadFileFromTheInternetAsync(dictionaryUrl);
+Dictionary<string, string> z = body
     .Split('\n')
-    .Where(x => !string.IsNullOrEmpty(x) )
-    .Select(x => x.Split(',') )
-    .ToDictionary<string[], string, string>(
+    .Where(x => !string.IsNullOrEmpty(x))
+    .Select(x => x.Split(','))
+    .ToDictionary(
         r => r[0],
         r => r[1]
     );
@@ -49,9 +42,10 @@ var z = body
 
 Console.WriteLine(body);
 
-const string wishlistUrl = "https://julekalender-backend.knowit.no/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdkFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--7400c6d0a99d17a53b0cdcb0b32a40026c0b44a2/letter.txt?disposition=inline";
-string wishlist = await DownloadFileFromTheInternetAsync(wishlistUrl);
+const string wishlistUrl =
+    "https://julekalender-backend.knowit.no/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBdkFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--7400c6d0a99d17a53b0cdcb0b32a40026c0b44a2/letter.txt?disposition=inline";
+var wishlist = await DownloadFileFromTheInternetAsync(wishlistUrl);
 
-string result = Decode(wishlist, z);
+var result = Decode(wishlist, z);
 
-Console.WriteLine(result);
+Console.WriteLine(result.Length);
